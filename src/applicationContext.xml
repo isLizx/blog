@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/util 
+	http://www.springframework.org/schema/util/spring-util.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.2.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd ">
+	
+	<context:component-scan base-package="cn.edu.hzvtc"></context:component-scan>
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	
+	<!-- 导入资源文件 -->
+	<context:property-placeholder location="classpath:db.properties" />
+	<!-- 配置 C3P0 数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+		<property name="initialPoolSize" value="${jdbc.initPoolSize}"></property>
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}"></property>
+		<property name="minPoolSize" value="${jdbc.minPoolSize}"></property>
+		<property name="acquireIncrement" value="${jdbc.acquireIncrement}"></property>
+		<property name="maxIdleTime" value="${jdbc.maxIdleTime}"></property>
+		<property name="idleConnectionTestPeriod" value="${jdbc.idleConnectionTestPeriod}"></property>
+	</bean>
+	
+	<!-- 配置 SessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocations" value="classpath:hibernate.cfg.xml"></property>
+	</bean>
+	
+	<!-- 配置TransactionManager 事务管理器-->
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 用户模块 -->
+	<bean id="loginController" class="cn.edu.hzvtc.web.admin.LoginController" scope="prototype">
+		<property name="userService" ref="userService"></property>
+	</bean>
+	<bean id="userService" class="cn.edu.hzvtc.service.impl.UserServiceImpl">
+		<property name="userRepository" ref="userRepositoryImpl"></property>
+	</bean>
+	<bean id="userRepositoryImpl" class="cn.edu.hzvtc.repository.impl.UserRepositoryImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 博客模块 -->
+	<bean id="blogController" class="cn.edu.hzvtc.web.admin.BlogController" scope="prototype">
+		<property name="blogService" ref="blogService"></property>
+		<property name="typeService" ref="typeService"></property>
+		<property name="tagService" ref="tagService"></property>
+	</bean>
+	<bean id="blogService" class="cn.edu.hzvtc.service.impl.BlogServiceImpl">
+		<property name="blogRepository" ref="blogRepositoryImpl"></property>
+		<property name="commentRepository" ref="commentRepositoryImpl"></property>
+	</bean>
+	<bean id="blogRepositoryImpl" class="cn.edu.hzvtc.repository.impl.BlogRepositoryImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 评论模块 -->
+	<bean id="commentController" class="cn.edu.hzvtc.web.CommentController" scope="prototype">
+		<property name="blogService" ref="blogService"></property>
+		<property name="commentService" ref="commentService"></property>
+	</bean>
+	<bean id="commentService" class="cn.edu.hzvtc.service.impl.CommentServiceImpl">
+		<property name="commentRepository" ref="commentRepositoryImpl"></property>
+	</bean>
+	<bean id="commentRepositoryImpl" class="cn.edu.hzvtc.repository.impl.CommentRepositoryImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	
+	<!-- 分类模块 -->
+	<bean id="typeController" class="cn.edu.hzvtc.web.admin.TypeController" scope="prototype">
+		<property name="typeService" ref="typeService"></property>
+	</bean>
+	<bean id="typeService" class="cn.edu.hzvtc.service.impl.TypeServiceImpl">
+		<property name="typeRepository" ref="typeRepositoryImpl"></property>
+	</bean>
+	<bean id="typeRepositoryImpl" class="cn.edu.hzvtc.repository.impl.TypeRepositoryImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 标签模块 -->
+	<bean id="tagController" class="cn.edu.hzvtc.web.admin.TagController" scope="prototype">
+		<property name="tagService" ref="tagService"></property>
+	</bean>
+	<bean id="tagService" class="cn.edu.hzvtc.service.impl.TagServiceImpl">
+		<property name="tagRepository" ref="tagRepositoryImpl"></property>
+	</bean>
+	<bean id="tagRepositoryImpl" class="cn.edu.hzvtc.repository.impl.TagRepositoryImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 博客前端模块 -->
+	<bean id="indexController" class="cn.edu.hzvtc.web.IndexController" scope="prototype">
+		<property name="blogService" ref="blogService"></property>
+		<property name="typeService" ref="typeService"></property>
+		<property name="tagService" ref="tagService"></property>
+		<property name="commentService" ref="commentService"></property>
+	</bean>
+	
+	<!-- 分类前端模块 -->
+	<bean id="typeShowController" class="cn.edu.hzvtc.web.TypeShowController" scope="prototype">
+		<property name="typeService" ref="typeService"></property>
+		<property name="blogService" ref="blogService"></property>
+	</bean>
+	
+	<!-- 标签前端模块 -->
+	<bean id="tagShowController" class="cn.edu.hzvtc.web.TagShowController" scope="prototype">
+		<property name="tagService" ref="tagService"></property>
+		<property name="blogService" ref="blogService"></property>
+	</bean>
+	
+	<!-- 归档模块 -->
+	<bean id="archiveShowController" class="cn.edu.hzvtc.web.ArchiveShowController" scope="prototype">
+		<property name="blogService" ref="blogService"></property>
+	</bean>
+	
+	<!-- about模块 -->
+	<bean id="aboutShowController" class="cn.edu.hzvtc.web.AboutShowController" scope="prototype">
+	</bean>
+	
+	<!-- 过滤器 -->
+	<bean id="userLoginInterceptor" class="cn.edu.hzvtc.util.UserLoginInterceptor"></bean>
+</beans>

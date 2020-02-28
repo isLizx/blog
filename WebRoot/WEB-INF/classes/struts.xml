@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+	<!-- 定义一些自定义的拦截器 -->
+	<package name="demo1" extends="struts-default,json-default" namespace="/templates/admin">
+		<interceptors>
+			<!-- 自定义的防止用户未登录的拦截器 -->
+			<interceptor name="userLoginInterceptor" class="userLoginInterceptor" />
+			<interceptor-stack name="mystack">
+				<!-- 将struts自带的拦截器加入到自定义的栈中 -->
+				<interceptor-ref name="defaultStack"></interceptor-ref>
+				<!-- 防止用户未登录进行其他操作 -->
+				<interceptor-ref name="userLoginInterceptor">
+					<!-- 不拦截以下方法 -->
+					<param name="excludeMethods">login,verifyCode</param>
+				</interceptor-ref>
+				<!-- 配置Struts token令牌防止表单重复提交 -->
+				<interceptor-ref name="token">
+					<!-- 只拦截以下方法 -->
+					<param name="includeMethods">add,update,saveOrUpdate</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		<!-- 默认拦截器 -->
+		<default-interceptor-ref name="mystack"></default-interceptor-ref>
+		<!-- 全局结果 -->
+		<global-results>
+			<result name="toLoginPage">login.jsp</result>
+			<result name="invalid.token">../error/error.jsp</result>
+			<result name="ajax" type="json"></result>
+		</global-results>
+
+	</package>
+
+	<!-- 管理员模块 -->
+	<package name="demo2" extends="demo1" namespace="/templates/admin">
+		<!-- 用户模块 -->
+		<action name="user_*" class="loginController" method="{1}">
+			<!-- 登陆成功 -->
+			<result name="loginsuccess">index.jsp</result>
+			<!-- 登陆失败 -->
+			<result name="login">login.jsp</result>
+			<!-- 退出登陆 -->
+			<result name="logoutsuccess">login.jsp</result>
+		</action>
+
+
+		<!-- 博客模块 -->
+		<action name="blog_*" class="blogController" method="{1}">
+			<!-- 查询所有 -->
+			<result name="listpage">blogs.jsp</result>
+			<!-- 更新成功后 -->
+			<result name="success" type="redirectAction">blog_listpage</result>
+			<!-- 到更新页面 -->
+			<result name="input">blogs-input.jsp</result>
+		</action>
+		
+		<!-- 分类模块 -->
+		<action name="type_*" class="typeController" method="{1}">
+			<!-- 分页到页面 -->
+			<result name="listpage">types.jsp</result>
+			<!-- 到添加页面 -->
+			<result name="toAddPage">types-input.jsp</result>
+			<!-- 修改之前先查询 -->
+			<result name="findTypeById">types-input.jsp</result>
+			<!-- 更新失败后 -->
+			<result name="input">types-input.jsp</result>
+			<!-- 更新成功 -->
+			<result name="success" type="redirectAction">type_listpage?currentPage=${currentPage}</result>
+	
+		</action>
+
+		<!-- 标签模块 -->
+		<action name="tag_*" class="tagController" method="{1}">
+			<!-- 分页到页面 -->
+			<result name="listpage">tags.jsp</result>
+			<!-- 到添加页面 -->
+			<result name="toAddPage">tags-input.jsp</result>
+			<!-- 更新失败 -->
+			<result name="input">tags-input.jsp</result>
+			<!-- 更新成功 -->
+			<result name="success" type="redirectAction">tag_listpage?currentPage=${currentPage}</result>
+			<!-- 修改之前先查询 -->
+			<result name="findTypeById">tags-input.jsp</result>
+		</action>
+
+	</package>
+	
+	<!-- 用户展示模块 -->
+	<package name="demo3" extends="struts-default,json-default" namespace="/templates">
+		<global-results>
+			<result name="ajax" type="json"></result>
+		</global-results>
+		<!-- 博客展示模块 -->
+		<action name="blog_*" class="indexController" method="{1}">
+			<!-- 查询到所有博客之后 -->
+			<result name="index">index.jsp</result>
+			<!-- 全局搜索博客之后 -->
+			<result name="search">search.jsp</result>
+			<!-- 查询单个博客之后 -->
+			<result name="getOneBlog">blog.jsp</result>
+		</action>
+		<!-- 评论展示模块 -->
+		<action name="comment_*" class="commentController" method="{1}">
+			<!-- 评论或回复之后 -->
+			<result name="save" type="redirectAction">comment_comments.action?blogId=${blogId}</result>
+			<!-- 局部刷新评论 -->
+			<result name="comments">commentlist.jsp</result>
+		</action>
+		<!-- 类型展示模块 -->
+		<action name="type_*" class="typeShowController" method="{1}">
+			<!-- 查询分类博客之后 -->
+			<result name="types">types.jsp</result>
+		</action>
+		<!-- 标签展示模块 -->
+		<action name="tag_*" class="tagShowController" method="{1}">
+			<!-- 查询标签博客之后 -->
+			<result name="tags">tags.jsp</result>
+		</action>
+		<!-- 归档展示模块 -->
+		<action name="archive_*" class="archiveShowController" method="{1}">
+			<!-- 归档之后 -->
+			<result name="archives">archives.jsp</result>
+		</action>
+		<!-- 归档展示模块 -->
+		<action name="about" class="aboutShowController" method="about">
+			<!-- 归档之后 -->
+			<result name="about">about.jsp</result>
+		</action>
+	</package>
+
+</struts>
+
+
+

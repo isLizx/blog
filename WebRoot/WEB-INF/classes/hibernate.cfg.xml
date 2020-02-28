@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
+<hibernate-configuration>
+	<session-factory>
+		
+		<property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+
+		<property name="show_sql">true</property>
+
+		<property name="hbm2ddl.auto">update</property>
+		<property name="connection.characterEncoding">utf-8</property>
+		
+		<mapping class="cn.edu.hzvtc.bean.Blog"/>
+		<mapping class="cn.edu.hzvtc.bean.Comment"/>
+		<mapping class="cn.edu.hzvtc.bean.Tag"/>
+		<mapping class="cn.edu.hzvtc.bean.Type"/>
+		<mapping class="cn.edu.hzvtc.bean.User"/>
+	</session-factory>
+</hibernate-configuration>
